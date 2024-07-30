@@ -1,5 +1,5 @@
 <script>
-	import '../../app.css';
+	import '$lib/app.css';
 
 	import { afterNavigate } from '$app/navigation';
 
@@ -22,7 +22,7 @@
 			<a
 				class="flex-none font-semibold text-xl text-black focus:outline-none focus:opacity-80 dark:text-white"
 				href="/"
-				aria-label="Brand">Brand</a
+				aria-label="Brand">Zefyr</a
 			>
 		</div>
 		<nav
@@ -488,6 +488,14 @@
 					</a>
 				</li>
 			</ul>
+			<form method="POST">
+				<li>
+					<button formaction="/?/setTheme&theme=dark">Dark</button>
+				</li>
+				<li>
+					<button formaction="/?/setTheme&theme=light">Light</button>
+				</li>
+			</form>
 		</nav>
 	</div>
 	<!-- End Sidebar -->
