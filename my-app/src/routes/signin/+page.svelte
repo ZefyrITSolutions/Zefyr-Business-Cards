@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { createEventDispatcher } from 'svelte';
 	export let data;
@@ -10,46 +11,42 @@
 
 	let email = '';
 	let password = '';
-	let confirmPassword = '';
-	let displayName = '';
 	let errorMessage = '';
 	let successMessage = '';
-	let isTermsAccepted = false;
+	let isRememberMe = false;
 
-	const handleSignUp = async () => {
-		if (password !== confirmPassword) {
-			errorMessage = 'Passwords do not match';
-			return;
-		}
+	const handleSignIn = async () => {
+		errorMessage = '';
 
-		if (!isTermsAccepted) {
-			errorMessage = 'You must accept the terms and conditions';
-			return;
-		} else {
-			errorMessage = ''; // Clear the error message if terms are accepted
-		}
-
-		const { error } = await supabase.auth.signUp({
+		const { error } = await supabase.auth.signInWithPassword({
 			email,
-			password,
-			options: {
-				data: {
-					display_name: displayName
-				}
-			}
+			password
 		});
 
 		if (error) {
 			errorMessage = error.message;
 		} else {
-			dispatch('signedUp', { email });
-			successMessage = 'You account was created';
+			dispatch('signedIn', { email });
+			successMessage = 'You have successfully signed in';
+		}
+	};
+
+	const handleResetPassword = async () => {
+		errorMessage = '';
+
+		const { error } = await supabase.auth.resetPasswordForEmail(email);
+
+		if (error) {
+			errorMessage = error.message;
+		} else {
+			successMessage = 'Password reset email sent';
 		}
 	};
 
 	const handleSubmit = (event: Event) => {
 		event.preventDefault();
-		handleSignUp();
+		handleSignIn();
+		goto('dashboard');
 	};
 </script>
 
@@ -58,14 +55,14 @@
 >
 	<div class="p-4 sm:p-7">
 		<div class="text-center">
-			<h1 class="block text-2xl font-bold text-gray-800 dark:text-white">Sign up</h1>
+			<h1 class="block text-2xl font-bold text-gray-800 dark:text-white">Sign in</h1>
 			<p class="mt-2 text-sm text-gray-600 dark:text-neutral-400">
-				Already have an account?
+				Don't have an account yet?
 				<a
 					class="text-blue-600 decoration-2 hover:underline focus:outline-none focus:underline font-medium dark:text-blue-500"
-					href="/signin"
+					href="/signup"
 				>
-					Sign in here
+					Sign up here
 				</a>
 			</p>
 		</div>
@@ -101,42 +98,54 @@
 			>
 				Or
 			</div>
+
+			<!-- Form -->
 			<form on:submit={handleSubmit}>
 				<div class="grid gap-y-4">
+					<!-- Form Group -->
 					<div>
-						<label for="display-name" class="block text-sm font-medium mb-2 dark:text-white"
-							>Full name</label
-						>
-						<div class="relative">
-							<input
-								type="text"
-								id="display-name"
-								name="display-name"
-								class="py-3 px-4 block w-full border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-								bind:value={displayName}
-								required
-								aria-describedby="display-name-error"
-							/>
-						</div>
-					</div>
-					<div>
-						<label for="email" class="block text-sm font-medium mb-2 dark:text-white"
-							>Email address</label
-						>
+						<label for="email" class="block text-sm mb-2 dark:text-white">Email address</label>
 						<div class="relative">
 							<input
 								type="email"
 								id="email"
 								name="email"
-								class="py-3 px-4 block w-full border border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+								class="py-3 px-4 block w-full border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
 								bind:value={email}
 								required
 								aria-describedby="email-error"
 							/>
+							<div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+								<svg
+									class="size-5 text-red-500"
+									width="16"
+									height="16"
+									fill="currentColor"
+									viewBox="0 0 16 16"
+									aria-hidden="true"
+								>
+									<path
+										d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+									/>
+								</svg>
+							</div>
 						</div>
+						<p class="hidden text-xs text-red-600 mt-2" id="email-error">
+							Please include a valid email address so we can get back to you
+						</p>
 					</div>
+					<!-- End Form Group -->
+
+					<!-- Form Group -->
 					<div>
-						<label for="password" class="block text-sm mb-2 dark:text-white">Password</label>
+						<div class="flex justify-between items-center">
+							<label for="password" class="block text-sm mb-2 dark:text-white">Password</label>
+							<button
+								type="button"
+								class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-none focus:underline font-medium dark:text-blue-500"
+								on:click={handleResetPassword}>Forgot password?</button
+							>
+						</div>
 						<div class="relative">
 							<input
 								type="password"
@@ -147,57 +156,59 @@
 								required
 								aria-describedby="password-error"
 							/>
+							<div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+								<svg
+									class="size-5 text-red-500"
+									width="16"
+									height="16"
+									fill="currentColor"
+									viewBox="0 0 16 16"
+									aria-hidden="true"
+								>
+									<path
+										d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+									/>
+								</svg>
+							</div>
 						</div>
+						<p class="hidden text-xs text-red-600 mt-2" id="password-error">
+							8+ characters required
+						</p>
 					</div>
-					<div>
-						<label for="confirm-password" class="block text-sm mb-2 dark:text-white"
-							>Confirm Password</label
-						>
-						<div class="relative">
-							<input
-								type="password"
-								id="confirm-password"
-								name="confirm-password"
-								class="py-3 px-4 block w-full border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-								bind:value={confirmPassword}
-								required
-								aria-describedby="confirm-password-error"
-							/>
-						</div>
-					</div>
+					<!-- End Form Group -->
+
+					<!-- Checkbox -->
 					<div class="flex items-center">
 						<div class="flex">
 							<input
+								type="checkbox"
 								id="remember-me"
 								name="remember-me"
-								type="checkbox"
-								class="shrink-0 mt-0.5 border border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-								bind:checked={isTermsAccepted}
+								class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:focus:ring-neutral-600 dark:focus:ring-offset-neutral-800"
+								bind:checked={isRememberMe}
 							/>
 						</div>
-						<div class="ms-3">
-							<label for="remember-me" class="text-sm dark:text-white"
-								>I accept the <a
-									class="text-blue-600 decoration-2 hover:underline focus:outline-none focus:underline font-medium dark:text-blue-500"
-									href="/">Terms and Conditions</a
-								></label
-							>
-						</div>
+						<label for="remember-me" class="ms-3 text-sm dark:text-white">Remember me</label>
 					</div>
-					{#if !isTermsAccepted && errorMessage}
-						<p class="text-xs text-red-600 mt-2">{errorMessage}</p>
-					{/if}
+					<!-- End Checkbox -->
 
 					<button
 						type="submit"
-						class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-						>Sign up</button
+						class="py-3 px-4 inline-flex justify-center items-center gap-x-3 text-sm font-medium rounded-md border border-transparent text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 transition disabled:opacity-50 disabled:pointer-events-none dark:focus:ring-offset-neutral-800"
+						>Sign in</button
 					>
+
+					<!-- Error message -->
+					{#if errorMessage}
+						<div class="mt-2 text-red-600 text-sm">{errorMessage}</div>
+					{/if}
+					<!-- Success message -->
 					{#if successMessage}
-						<p class="text-xs text-center text-green-600 mt-2">{successMessage}</p>
+						<div class="mt-2 text-green-600 text-sm">{successMessage}</div>
 					{/if}
 				</div>
 			</form>
+			<!-- End Form -->
 		</div>
 	</div>
 </div>

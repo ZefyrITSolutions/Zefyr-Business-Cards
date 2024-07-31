@@ -2,7 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --background-color-light: #f7fafc;
+    /* Light theme background */
+    --background-color-dark: #222223;
+    /* Dark theme background */
+    --text-color-light: #1a202c;
+    /* Light theme text color */
+    --text-color-dark: #e2e8f0;
+    /* Dark theme text color */
+}
+
+/* Light Theme */
 html {
-    width: 100%;
-    background-color: rgb(255, 255, 255);
+    background-color: var(--background-color-light);
+    color: var(--text-color-light);
+}
+
+/* Dark Theme */
+html.dark {
+    background-color: var(--background-color-dark);
+    color: var(--text-color-dark);
 }

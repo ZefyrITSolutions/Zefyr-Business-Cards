@@ -1,12 +1,27 @@
 <script>
+	export let data;
+
+	let { supabase, session } = data;
+	$: ({ supabase, session } = data);
+
 	import '$lib/app.css';
 
 	import { afterNavigate } from '$app/navigation';
+	import { goto } from '$app/navigation';
 
 	afterNavigate(() => {
 		// @ts-ignore
 		window.HSStaticMethods.autoInit();
 	});
+
+	async function signOut() {
+		const { error } = await supabase.auth.signOut();
+		if (!error) {
+			goto('/');
+		} else {
+			console.error('Error signing out:', error.message);
+		}
+	}
 </script>
 
 <body class="flex h-screen w-full">
@@ -488,15 +503,12 @@
 					</a>
 				</li>
 			</ul>
-			<form method="POST">
-				<li>
-					<button formaction="/?/setTheme&theme=dark">Dark</button>
-				</li>
-				<li>
-					<button formaction="/?/setTheme&theme=light">Light</button>
-				</li>
-			</form>
 		</nav>
+		<button
+			on:click={signOut}
+			class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+			>Sign out</button
+		>
 	</div>
 	<!-- End Sidebar -->
 	<section
