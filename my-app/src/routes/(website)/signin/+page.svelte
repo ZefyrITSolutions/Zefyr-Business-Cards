@@ -14,20 +14,37 @@
 	let errorMessage = '';
 	let successMessage = '';
 	let isRememberMe = false;
+	let sessionLoaded = false;
 
 	const handleSignIn = async () => {
 		errorMessage = '';
 
-		const { error } = await supabase.auth.signInWithPassword({
-			email,
-			password
-		});
+		try {
+			const { error } = await supabase.auth.signInWithPassword({
+				email,
+				password
+			});
 
-		if (error) {
-			errorMessage = error.message;
-		} else {
-			dispatch('signedIn', { email });
-			successMessage = 'You have successfully signed in';
+			if (error) {
+				errorMessage = error.message;
+			} else {
+				dispatch('signedIn', { email });
+				successMessage = 'You have successfully signed in';
+				// Wait for session to load before navigating
+				sessionLoaded = false;
+				const {
+					data: { session }
+				} = await supabase.auth.getSession();
+				sessionLoaded = true;
+				if (session) {
+					goto(`/${session.user.user_metadata.display_name}/dashboard`);
+				} else {
+					console.log('session is not there');
+				}
+			}
+		} catch (error) {
+			console.error('Error during sign-in:', error);
+			errorMessage = 'An error occurred during sign-in';
 		}
 	};
 
@@ -46,7 +63,6 @@
 	const handleSubmit = (event: Event) => {
 		event.preventDefault();
 		handleSignIn();
-		goto('dashboard');
 	};
 </script>
 
