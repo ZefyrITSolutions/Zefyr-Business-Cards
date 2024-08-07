@@ -1,5 +1,5 @@
-// See https://kit.svelte.dev/docs/types#app
-// for information about these interfaces
+// src/global.d.ts
+
 import { SupabaseClient, Session } from "@supabase/supabase-js";
 
 declare global {
@@ -12,6 +12,13 @@ declare global {
 		}
 		// interface PageState {}
 		// interface Platform {}
+	}
+
+	interface Window {
+		HSStaticMethods: {
+			autoInit: () => void;
+			// Add other methods or properties if there are more
+		};
 	}
 }
 

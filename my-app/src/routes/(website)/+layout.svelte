@@ -6,13 +6,8 @@
 
 	import '$lib/app.css';
 
-	import { afterNavigate, goto } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import ThemeSwitch from '$lib/components/ThemeSwitch/ThemeSwitch.svelte';
-
-	afterNavigate(() => {
-		// @ts-ignore
-		window.HSStaticMethods.autoInit();
-	});
 </script>
 
 <!-- ========== HEADER ========== -->

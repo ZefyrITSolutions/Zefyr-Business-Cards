@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { createEventDispatcher } from 'svelte';
 	export let data;
 
@@ -15,35 +15,77 @@
 	let errorMessage = '';
 	let successMessage = '';
 	let isTermsAccepted = false;
+	let sessionLoaded = false;
 
 	const handleSignUp = async () => {
+		// Check for password match
 		if (password !== confirmPassword) {
 			errorMessage = 'Passwords do not match';
 			return;
 		}
 
+		// Check if terms and conditions are accepted
 		if (!isTermsAccepted) {
 			errorMessage = 'You must accept the terms and conditions';
 			return;
-		} else {
-			errorMessage = ''; // Clear the error message if terms are accepted
 		}
 
-		const { error } = await supabase.auth.signUp({
-			email,
-			password,
-			options: {
-				data: {
-					display_name: displayName
+		errorMessage = ''; // Clear the error message if terms are accepted
+
+		try {
+			// Attempt to sign up the user with Supabase
+			const { error, data: authData } = await supabase.auth.signUp({
+				email,
+				password,
+				options: {
+					data: {
+						display_name: displayName
+					}
+				}
+			});
+
+			// Handle errors during sign up
+			if (error) {
+				errorMessage = error.message;
+			} else {
+				// If sign up is successful, insert additional user data into the database
+				if (authData.user !== null) {
+					const { error: insertError } = await supabase.from('business_cards').insert([
+						{
+							// Use the generated UUID from Supabase auth
+							uuid: authData.user.id, // Assuming authData.user.id is the UUID
+
+							full_name: displayName,
+							email: authData.user.email,
+							creator_id: authData.user.id
+						}
+					]);
+
+					if (insertError) {
+						errorMessage = insertError.message;
+					} else {
+						dispatch('signedUp', { email });
+						successMessage = 'Your account was created successfully';
+
+						// Wait for session to load before navigating to the dashboard
+						sessionLoaded = false;
+						const {
+							data: { session }
+						} = await supabase.auth.getSession();
+						sessionLoaded = true;
+
+						if (session) {
+							// Navigate to the user's dashboard after successful sign up
+							goto(`/${session.user.user_metadata.display_name}/dashboard`);
+						} else {
+							console.log('Session not loaded');
+						}
+					}
 				}
 			}
-		});
-
-		if (error) {
-			errorMessage = error.message;
-		} else {
-			dispatch('signedUp', { email });
-			successMessage = 'You account was created';
+		} catch (error) {
+			console.error('Error during sign-up:', error);
+			errorMessage = 'An error occurred during sign-up';
 		}
 	};
 

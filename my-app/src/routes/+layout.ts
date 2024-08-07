@@ -41,3 +41,5 @@ export const load: LayoutLoad = async ({ fetch, data, depends }: any) => {
 
     return { supabase, session };
 };
+
+

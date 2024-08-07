@@ -1,7 +1,12 @@
 <script lang="ts">
 	export let data;
 
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll, afterNavigate } from '$app/navigation';
+	import ThemeSwitch from '$lib/components/ThemeSwitch/ThemeSwitch.svelte';
+
+	afterNavigate(() => {
+		window.HSStaticMethods.autoInit();
+	});
 
 	let { supabase, session } = data;
 	$: ({ supabase, session } = data);
