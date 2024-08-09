@@ -27,7 +27,10 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@popperjs/core": "^2.11.8",
+		"@preline/dropdown": "^2.4.1",
 		"@preline/overlay": "^2.4.1",
+		"@preline/tooltip": "^2.4.1",
 		"@supabase/ssr": "^0.4.0",
 		"@supabase/supabase-js": "^2.45.0",
 		"preline": "^2.4.1"

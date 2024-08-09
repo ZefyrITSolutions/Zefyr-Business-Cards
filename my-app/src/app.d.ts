@@ -17,7 +17,9 @@ declare global {
 	interface Window {
 		HSStaticMethods: {
 			autoInit: () => void;
-			// Add other methods or properties if there are more
+			Preline: {
+				init: () => void;
+			};
 		};
 	}
 }

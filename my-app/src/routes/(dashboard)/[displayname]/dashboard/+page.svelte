@@ -1,7 +1,10 @@
 <script lang="ts">
+	import '$lib/app.css';
+
+	export let data;
+
 	import { goto } from '$app/navigation';
 	import type { BusinessCard } from '$lib/types/businessCard.js';
-	export let data;
 
 	let { supabase, session } = data;
 	$: ({ supabase, session } = data);
@@ -33,6 +36,7 @@
 		}
 
 		businessCards = data;
+		console.log(businessCards);
 	}
 
 	async function loadData() {
@@ -77,6 +81,18 @@
 
 		return data?.length ? data[0].uuid : null;
 	}
+
+	async function deleteBusinessCard(businessCard: BusinessCard) {
+		const { error } = await supabase.from('business_cards').delete().eq('uuid', businessCard.uuid);
+
+		if (error) {
+			console.error('Error deleting business card:', error);
+			return;
+		}
+
+		// Update businessCards array after successful deletion
+		businessCards = businessCards.filter((card) => card.uuid !== businessCard.uuid);
+	}
 </script>
 
 <header class="flex justify-between items-center mb-5">
@@ -91,34 +107,87 @@
 	</button>
 </header>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-	{#each businessCards as businessCard}
-		<div
-			class="flex flex-col bg-white border shadow-sm rounded-xl dark:bg-neutral-900 dark:border-neutral-700 dark:shadow-neutral-700/70"
+{#if businessCards.length < 1}
+	<div class="w-full flex justify-between align-center border rounded p-5 dark:border-neutral-700">
+		<h2 class=" text-gray-800 dark:text-white">You have no business cards</h2>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="24"
+			height="24"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			class="lucide lucide-corner-right-up size-5"
+			><polyline points="10 9 15 4 20 9" /><path d="M4 20h7a4 4 0 0 0 4-4V4" /></svg
 		>
-			<div class="p-4 md:p-5">
-				<h3 class="text-lg font-bold text-gray-800 dark:text-white">{businessCard.full_name}</h3>
-				<a
-					class="mt-3 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-blue-600 decoration-2 hover:text-blue-700 hover:underline focus:underline focus:outline-none focus:text-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-600 dark:focus:text-blue-600"
-					href={`${businessCard.uuid}`}
+	</div>
+{:else}
+	<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+		{#each businessCards as businessCard}
+			<div
+				class="flex flex-col bg-white border shadow-sm rounded-xl dark:bg-neutral-900 dark:border-neutral-700 dark:shadow-neutral-700/70"
+			>
+				<div
+					class="flex justify-between items-center border-b rounded-t-xl py-3 px-4 md:px-5 dark:border-neutral-700"
 				>
-					Edit card
-					<svg
-						class="shrink-0 size-4"
-						xmlns="http://www.w3.org/2000/svg"
-						width="24"
-						height="24"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
+					<h3 class="text-lg font-bold text-gray-800 dark:text-white">{businessCard.full_name}</h3>
+
+					<div class="flex items-center gap-x-1">
+						<button
+							type="button"
+							class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent text-red-600 hover:text-red-800 focus:outline-none focus:text-red-800 disabled:opacity-50 disabled:pointer-events-none dark:text-red-300 dark:hover:text-red-400 dark:focus:text-red-400"
+							on:click={() => deleteBusinessCard(businessCard)}
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="24"
+								height="24"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="lucide lucide-trash-2 size-4"
+								><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path
+									d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+								/><line x1="10" x2="10" y1="11" y2="17" /><line
+									x1="14"
+									x2="14"
+									y1="11"
+									y2="17"
+								/></svg
+							>
+							Delete
+						</button>
+					</div>
+				</div>
+				<div class="p-4 md:p-5">
+					<a
+						class="inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-blue-600 decoration-2 hover:text-blue-700 hover:underline focus:underline focus:outline-none focus:text-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-600 dark:focus:text-blue-600"
+						href={`${businessCard.uuid}`}
 					>
-						<path d="m9 18 6-6-6-6"></path>
-					</svg>
-				</a>
+						Edit
+						<svg
+							class="shrink-0 size-4"
+							xmlns="http://www.w3.org/2000/svg"
+							width="24"
+							height="24"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<path d="m9 18 6-6-6-6"></path>
+						</svg>
+					</a>
+				</div>
 			</div>
-		</div>
-	{/each}
-</div>
+		{/each}
+	</div>
+{/if}

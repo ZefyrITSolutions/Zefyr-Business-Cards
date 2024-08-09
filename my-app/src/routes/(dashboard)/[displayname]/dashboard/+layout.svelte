@@ -7,6 +7,7 @@
 	import { onMount } from 'svelte';
 	import '$lib/app.css';
 	import { goto, invalidateAll } from '$app/navigation';
+	import ThemeSwitch from '$lib/components/ThemeSwitch/ThemeSwitch.svelte';
 
 	async function validateSession() {
 		const { data: user, error } = await supabase.auth.getUser();
@@ -37,17 +38,18 @@
 	<!-- Sidebar -->
 	<div
 		id="hs-offcanvas-example"
-		class="hs-overlay [--auto-close:lg] hs-overlay-open:translate-x-0 -translate-x-full transition-all duration-300 transform hidden z-[60] w-64 bg-white border-e border-gray-200 pt-7 pb-10 overflow-y-auto lg:block lg:translate-x-0 lg:end-auto lg:bottom-0 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 dark:bg-neutral-800 dark:border-neutral-700"
+		class="hs-overlay [--auto-close:lg] hs-overlay-open:translate-x-0 -translate-x-full transition-all transform hidden z-[60] w-64 bg-white border-e border-gray-200 pt-7 pb-10 overflow-y-auto lg:block lg:translate-x-0 lg:end-auto lg:bottom-0 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 dark:bg-neutral-800 dark:border-neutral-700"
 		role="dialog"
 		tabindex="-1"
 		aria-label="Sidebar"
 	>
-		<div class="px-6">
+		<div class="px-6 flex justify-between align-center">
 			<a
-				class="flex-none font-semibold text-xl text-black focus:outline-none focus:opacity-80 dark:text-white"
+				class="flex-none pt-1 font-semibold text-xl text-black focus:outline-none focus:opacity-80 dark:text-white"
 				href="/"
 				aria-label="Brand">Zefyr</a
 			>
+			<ThemeSwitch />
 		</div>
 		<nav
 			class="hs-accordion-group p-6 w-full flex flex-col flex-wrap"
